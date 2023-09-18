@@ -1,36 +1,41 @@
 package br.com.erudio.Controllers;
 
 
+import java.awt.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import br.com.erudio.model.Person;
+import br.com.erudio.services.PersonServices;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import br.com.erudio.converters.NumberConverter;
 import br.com.erudio.math.SimpleMath;
-import br.com.erudio.Exceptions.*;
+import br.com.erudio.exceptions.*;
 
 @RestController
+@RequestMapping("/person")
 public class PersonController {
 	
-	
+	@Autowired
+	private PersonServices service;
 	private final AtomicLong counter = new AtomicLong();
 	private SimpleMath math = new SimpleMath();
-	
-	@RequestMapping(value= "/sum/{numberOne}/{numberTwo}",
-			method=RequestMethod.GET)
-	public Double sum(
-			@PathVariable(value = "numberOne") String numberOne,
-			@PathVariable(value = "numberTwo") String numberTwo
-			)throws Exception {
+	@RequestMapping(method=RequestMethod.GET,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<Person> findAll(){
+
+		return service.findAll();
+	}
+	@RequestMapping(value= "/{id}",
+			method=RequestMethod.GET,
+	produces = MediaType.APPLICATION_JSON_VALUE)
+	public Person findById(@PathVariable(value = "id") String id)throws Exception {
 		
-			if(!NumberConverter.isNumeric(numberOne)| !NumberConverter.isNumeric(numberTwo)) {
-				throw new UnsupportedMathOperationException("Please set a numeric value!");
-			
-		}
-		return math.sum(NumberConverter.convertToDouble(numberOne), NumberConverter.convertToDouble(numberTwo));
+			return service.findById(id);
 	}
 	@RequestMapping(value= "/sub/{numberOne}/{numberTwo}",
 			method=RequestMethod.GET)
@@ -44,6 +49,13 @@ public class PersonController {
 			
 		}
 		return math.subtraction(NumberConverter.convertToDouble(numberOne), NumberConverter.convertToDouble(numberTwo));
+	}
+	@RequestMapping(method=RequestMethod.POST,
+			consumes = MediaType.APPLICATION_JSON_VALUE,
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	private  Person create(@RequestBody Person person){
+		return service.create(person);
+
 	}
 	@RequestMapping(value= "/mult/{numberOne}/{numberTwo}",
 			method=RequestMethod.GET)
